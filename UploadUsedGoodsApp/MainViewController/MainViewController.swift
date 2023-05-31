@@ -27,7 +27,71 @@ class MainViewController: UIViewController {
     }
     
     func bind(_ viewModel: MainViewModel) {
+        viewModel.cellData // viewModel 에서 cellData 값 가져와서 유아이 그려주기!
+            .drive(tableView.rx.items) { tv, row, data in
+                switch row {
+                case 0:
+                    let cell = tv.dequeueReusableCell(
+                        withIdentifier: String(describing: TitleTextFieldCell.self),
+                        for: IndexPath(row: row, section: 0)
+                    ) as! TitleTextFieldCell
+                    cell.selectionStyle = .none
+                    cell.titleInputField.placeholder = data
+                    cell.bind(viewModel.titleTextFieldCellViewModel)
+                    return cell
+                case 1:
+                    let cell = tv.dequeueReusableCell(
+                        withIdentifier: "CategoryCell",
+                        for: IndexPath(row: row, section: 0)
+                    )
+                    cell.selectionStyle = .none
+                    cell.textLabel?.text = data
+                    cell.accessoryType = .disclosureIndicator // 꺽쇠모양 추가
+                    return cell
+                case 2:
+                    let cell = tv.dequeueReusableCell(
+                        withIdentifier: String(describing: PriceTextFieldCell.self),
+                        for: IndexPath(row: row, section: 0)
+                    ) as! PriceTextFieldCell
+                    cell.selectionStyle = .none
+                    cell.priceInputField.placeholder = data
+                    cell.bind(viewModel.priceTextFieldCellViewModel)
+                    return cell
+                case 3:
+                    let cell = tv.dequeueReusableCell(
+                        withIdentifier: String(describing: DetailWriteFormCell.self),
+                        for: IndexPath(row: row, section: 0)
+                    ) as! DetailWriteFormCell
+                    cell.selectionStyle = .none
+                    cell.contentInputView.text = data
+                    cell.bind(viewModel.detailWriteFormCellViewModel)
+                    return cell
+                default:
+                    fatalError()
+                }
+            }
+            .disposed(by: disposeBag)
         
+        viewModel.presentAlert
+            .emit(to: self.rx.setAlert) // Alert 받으면 띄워준다.
+            .disposed(by: disposeBag)
+        
+        viewModel.push
+            .drive(onNext: { viewModel in
+                let viewController = CategoryListViewController()
+                viewController.bind(viewModel)
+                self.show(viewController, sender: nil)
+            })
+            .disposed(by: disposeBag)
+        
+        tableView.rx.itemSelected
+            .map { $0.row }
+            .bind(to: viewModel.itemSelected)
+            .disposed(by: disposeBag)
+        
+        submitButton.rx.tap
+            .bind(to: viewModel.submitButtonTapped)
+            .disposed(by: disposeBag)
     }
     
     func attribute() {

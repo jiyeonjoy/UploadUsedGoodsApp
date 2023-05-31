@@ -22,7 +22,7 @@ struct MainViewModel {
     let itemSelected = PublishRelay<Int>()
     let submitButtonTapped = PublishRelay<Void>()
     
-    init() {
+    init(model: MainModel = MainModel()) {
         // MARK:-cell data
         let title = Observable.just("글 제목")
         let categoryViewModel = CategoryViewModel()
@@ -71,12 +71,7 @@ struct MainViewModel {
         
         self.presentAlert = submitButtonTapped
             .withLatestFrom(errorMessages) { $1 }
-            .map {
-                errorMessages -> (title: String, message: String?) in
-                let title = errorMessages.isEmpty ? "성공": "실패"
-                let message = errorMessages.isEmpty ? nil : errorMessages.joined(separator: "\n")
-                return (title: title, message: message)
-            }
+            .map(model.setAlert)
             .asSignal(onErrorSignalWith: .empty())
         
         // MARK:-push

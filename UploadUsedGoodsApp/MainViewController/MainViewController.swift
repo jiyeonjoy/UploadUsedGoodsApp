@@ -10,6 +10,10 @@ import RxSwift
 import RxCocoa
 
 class MainViewController: UIViewController {
+    let disposeBag = DisposeBag()
+    
+    let tableView = UITableView()
+    let submitButton = UIBarButtonItem()
     
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
@@ -29,9 +33,28 @@ class MainViewController: UIViewController {
     func attribute() {
         title = "중고거래 글쓰기"
         view.backgroundColor = .systemGroupedBackground
+        
+        submitButton.title = "제출"
+        submitButton.style = .done
+        
+        navigationItem.setRightBarButton(submitButton, animated: true)
+        
+        tableView.backgroundColor = .white
+        tableView.register(TitleTextFieldCell.self, forCellReuseIdentifier: "TitleTextFieldCell")
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "CategoryCell")
+        tableView.register(PriceTextFieldCell.self, forCellReuseIdentifier: "PriceTextFieldCell")
+
+        tableView.separatorStyle = .singleLine
+        tableView.tableFooterView = UIView()
     }
     
-    func layout() {}
+    func layout() {
+        view.addSubview(tableView)
+        
+        tableView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+    }
 }
 
 typealias Alert = (title: String, message: String?)
